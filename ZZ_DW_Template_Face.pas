@@ -28,7 +28,7 @@ unit userscript;
 
 var
   slRoleTemplateList, slRoleTemplateNameList, slRoleTemplateEditorIdList, slLevelListName : TStringList;
-  lFaceTemplateList, lFullNameFilter, lRaceFilter, lFactionFilter, lEditorIdSubstringFilter, lVanillaLevelList, lVanillaLevelListCount : TList;
+  lFaceTemplateList, lFullNameFilter, lRaceFilter, lFactionFilter, lEditorIdSubstringFilter, lVanillaLevelList, lVanillaLevelListCount, lVoiceFilter : TList;
   target_file, skyrimFile, dwFile, iwFile : IInterface;
   
   
@@ -109,7 +109,7 @@ end;
   
 procedure setupVariablesForLeveledList;
 var
-  cur_full_name_filter, cur_race_filter, cur_faction_filter, cur_editorid_substring_filter : TStringList;
+  cur_full_name_filter, cur_race_filter, cur_faction_filter, cur_editorid_substring_filter, cur_voice_filter : TStringList;
   i, index : integer;
   new_level_list_name : string;
 begin
@@ -119,6 +119,7 @@ begin
   lRaceFilter               := TList.Create; 
   lFactionFilter            := TList.Create; 
   lEditorIdSubstringFilter  := TList.Create;  
+  lVoiceFilter				:= TList.Create;
   
   // For each leveled list string in slLevelListName, creates a leveled list entry with that name and adds npcs
   // from Deadly Wenches that meet the filters set below
@@ -132,13 +133,15 @@ begin
   // lRaceFilter.Add(TStringList.Create);
   // lFactionFilter.Add(TStringList.Create);
   // lEditorIdSubstringFilter.Add(TStringList.Create);
+  // lVoiceFilter.Add(TStringList.Create);
   // index := slLevelListName.IndexOf(new_level_list_name);                         
   // cur_full_name_filter           := TStringList(lFullNameFilter[index]);  
   // cur_race_filter                := TStringList(lRaceFilter[index]);
   // cur_faction_filter             := TStringList(lFactionFilter[index]);  
-  // cur_editorid_substring_filter := TStringList(lEditorIdSubstringFilter[index]);
+  // cur_editorid_substring_filter  := TStringList(lEditorIdSubstringFilter[index]);
+  // cur_voice_filter               := TStringList(lVoiceFilter[index]);
   // 
-  // cur_full_name_filter.Add('');          // Each line here tells the script to add DW NPCs with these FULL names. Comment out if not using filter    
+  // cur_full_name_filter.Add('');          // Each line here tells the script to add DW NPCs with these FULL names. Comment out if not using filter.
   //            
   // cur_race_filter.Add('');               // Each line here tells the script to add DW NPCs with these races (using the race EditorID). Comment out if not using filter.
   //    
@@ -146,6 +149,7 @@ begin
   // 
   // cur_editorid_substring_filter.Add(''); // Each line here tells the script to add DW NPCs whose EditorID has the given substring. Comment out if not using filter
   //                                        // Example: Imperial Soldiers and Guards have the same full name and faction, but different in EditorIDs (ie DW_EncSoldier vs DW_EncGuard)
+  // cur_voice_filter.Add('')               // Each line here tells the script to add DW NPCs with these VTYP Editor ID references. Comment out if not using filter.
   
   //-------------------------------------------------------------------------------------------------------------
   // Example : DW_WenchSubChar_Vampires_Test
@@ -158,11 +162,13 @@ begin
   lRaceFilter.Add(TStringList.Create);
   lFactionFilter.Add(TStringList.Create);
   lEditorIdSubstringFilter.Add(TStringList.Create);
+  lVoiceFilter.Add(TStringList.Create);
   index := slLevelListName.IndexOf(new_level_list_name);                            
   cur_full_name_filter          := TStringList(lFullNameFilter[index]);  
   cur_race_filter               := TStringList(lRaceFilter[index]);
   cur_faction_filter            := TStringList(lFactionFilter[index]);  
   cur_editorid_substring_filter := TStringList(lEditorIdSubstringFilter[index]);
+  cur_voice_filter              := TStringList(lVoiceFilter[index]);
   
   //cur_full_name_filter.Add('');                       // No need to filter by FULL name   
             
@@ -182,6 +188,17 @@ begin
   //cur_faction_filter.Add('VigilantOfStendarrFaction');            
 
   //cur_editorid_substring_filter.Add('');              // No need to filter by EDID substring
+  
+  //cur_voice_filter.Add('FemaleCommander');			// No need to filter by VTYP
+  //cur_voice_filter.Add('FemaleCommoner');
+  //cur_voice_filter.Add('FemaleCondescending');
+  //cur_voice_filter.Add('FemaleCoward');
+  //cur_voice_filter.Add('FemaleDarkElf');
+  //cur_voice_filter.Add('FemaleElfHaughty');
+  //cur_voice_filter.Add('FemaleEvenToned');
+  //cur_voice_filter.Add('FemaleNord');
+  //cur_voice_filter.Add('FemaleSultry');
+  //cur_voice_filter.Add('FemaleYoungEager');
 
   
   //-------------------------------------------------------------------------------------------------------------
@@ -195,11 +212,13 @@ begin
   lRaceFilter.Add(TStringList.Create);
   lFactionFilter.Add(TStringList.Create);
   lEditorIdSubstringFilter.Add(TStringList.Create);
+  lVoiceFilter.Add(TStringList.Create);
   index := slLevelListName.IndexOf(new_level_list_name);                            
   cur_full_name_filter          := TStringList(lFullNameFilter[index]);  
   cur_race_filter               := TStringList(lRaceFilter[index]);
   cur_faction_filter            := TStringList(lFactionFilter[index]);  
   cur_editorid_substring_filter := TStringList(lEditorIdSubstringFilter[index]);
+  cur_voice_filter              := TStringList(lVoiceFilter[index]);
   
   cur_full_name_filter.Add('Forsworn Warmage');         // Add only Forsworn Warmages and Shamans
   cur_full_name_filter.Add('Forsworn Shaman');                          
@@ -221,6 +240,16 @@ begin
 
   //cur_editorid_substring_filter.Add('');              // No need to filter by EDID substring
   
+  //cur_voice_filter.Add('FemaleCommander');			// No need to filter by VTYP
+  //cur_voice_filter.Add('FemaleCommoner');
+  //cur_voice_filter.Add('FemaleCondescending');
+  //cur_voice_filter.Add('FemaleCoward');
+  //cur_voice_filter.Add('FemaleDarkElf');
+  //cur_voice_filter.Add('FemaleElfHaughty');
+  //cur_voice_filter.Add('FemaleEvenToned');
+  //cur_voice_filter.Add('FemaleNord');
+  //cur_voice_filter.Add('FemaleSultry');
+  //cur_voice_filter.Add('FemaleYoungEager');
   
   //-------------------------------------------------------------------------------------------------------------
   // Example : DW_WenchLCharSoldierImperial_Test
@@ -233,11 +262,13 @@ begin
   lRaceFilter.Add(TStringList.Create);
   lFactionFilter.Add(TStringList.Create);
   lEditorIdSubstringFilter.Add(TStringList.Create);
+  lVoiceFilter.Add(TStringList.Create);
   index := slLevelListName.IndexOf(new_level_list_name);                            
   cur_full_name_filter          := TStringList(lFullNameFilter[index]);  
   cur_race_filter               := TStringList(lRaceFilter[index]);
   cur_faction_filter            := TStringList(lFactionFilter[index]);  
   cur_editorid_substring_filter := TStringList(lEditorIdSubstringFilter[index]);
+  cur_voice_filter              := TStringList(lVoiceFilter[index]);
   
   //cur_full_name_filter.Add('');                       // No need to filter by FULL name       
             
@@ -258,6 +289,16 @@ begin
 
   cur_editorid_substring_filter.Add('DW_EncSoldier');   // Filter on editor IDs so you don't get Imperial Guards
   
+  //cur_voice_filter.Add('FemaleCommander');			// No need to filter by VTYP
+  //cur_voice_filter.Add('FemaleCommoner');
+  //cur_voice_filter.Add('FemaleCondescending');
+  //cur_voice_filter.Add('FemaleCoward');
+  //cur_voice_filter.Add('FemaleDarkElf');
+  //cur_voice_filter.Add('FemaleElfHaughty');
+  //cur_voice_filter.Add('FemaleEvenToned');
+  //cur_voice_filter.Add('FemaleNord');
+  //cur_voice_filter.Add('FemaleSultry');
+  //cur_voice_filter.Add('FemaleYoungEager');
   
   //-------------------------------------------------------------------------------------------------------------
   // Example : DW_WenchSubCharBandit_FemaleNord_magic_Test
@@ -270,11 +311,13 @@ begin
   lRaceFilter.Add(TStringList.Create);
   lFactionFilter.Add(TStringList.Create);
   lEditorIdSubstringFilter.Add(TStringList.Create);
+  lVoiceFilter.Add(TStringList.Create);
   index := slLevelListName.IndexOf(new_level_list_name);                            
   cur_full_name_filter          := TStringList(lFullNameFilter[index]);  
   cur_race_filter               := TStringList(lRaceFilter[index]);
   cur_faction_filter            := TStringList(lFactionFilter[index]);  
   cur_editorid_substring_filter := TStringList(lEditorIdSubstringFilter[index]);
+  cur_voice_filter              := TStringList(lVoiceFilter[index]);
   
   cur_full_name_filter.Add('Bandit Mage Marauder');     // Get only mage bandits
   cur_full_name_filter.Add('Bandit Necromancer');
@@ -295,6 +338,71 @@ begin
   //cur_faction_filter.Add('VigilantOfStendarrFaction');            
   
   //cur_editorid_substring_filter.Add('');              // No need to filter by EDID substring
+  
+  //cur_voice_filter.Add('FemaleCommander');			// No need to filter by VTYP
+  //cur_voice_filter.Add('FemaleCommoner');
+  //cur_voice_filter.Add('FemaleCondescending');
+  //cur_voice_filter.Add('FemaleCoward');
+  //cur_voice_filter.Add('FemaleDarkElf');
+  //cur_voice_filter.Add('FemaleElfHaughty');
+  //cur_voice_filter.Add('FemaleEvenToned');
+  //cur_voice_filter.Add('FemaleNord');
+  //cur_voice_filter.Add('FemaleSultry');
+  //cur_voice_filter.Add('FemaleYoungEager');
+  
+  //-------------------------------------------------------------------------------------------------------------
+  // Example : DW_WenchSubCharBanditBoss_EventonedTest
+  // Setups up variables to return a leveled list containing bandit bosses with even toned voice type
+  //-------------------------------------------------------------------------------------------------------------
+  new_level_list_name := 'DW_WenchSubCharBanditBoss_EventonedTest';     
+
+  slLevelListName.Add(new_level_list_name);
+  lFullNameFilter.Add(TStringList.Create);
+  lRaceFilter.Add(TStringList.Create);
+  lFactionFilter.Add(TStringList.Create);
+  lEditorIdSubstringFilter.Add(TStringList.Create);
+  lVoiceFilter.Add(TStringList.Create);
+  index := slLevelListName.IndexOf(new_level_list_name);                            
+  cur_full_name_filter          := TStringList(lFullNameFilter[index]);  
+  cur_race_filter               := TStringList(lRaceFilter[index]);
+  cur_faction_filter            := TStringList(lFactionFilter[index]);  
+  cur_editorid_substring_filter := TStringList(lEditorIdSubstringFilter[index]);
+  cur_voice_filter              := TStringList(lVoiceFilter[index]);
+  
+  cur_full_name_filter.Add('Bandit Blademaster Marauder');     // Get only mage bandits
+  cur_full_name_filter.Add('Bandit Berserker Marauder');
+  cur_full_name_filter.Add('Bandit Defender Marauder');
+  cur_full_name_filter.Add('Bandit Ranger Marauder');
+  cur_full_name_filter.Add('Bandit Warmage Marauder');
+  cur_full_name_filter.Add('Bandit Necromancer Marauder');
+            
+  //cur_race_filter.Add('NordRace');                      // Filter only nords
+  //cur_race_filter.Add('BretonRace');
+  //cur_race_filter.Add('ImperialRace');
+  //cur_race_filter.Add('RedguardRace');
+  //cur_race_filter.Add('DarkElfRace');
+  //cur_race_filter.Add('WoodElfRace');
+  //cur_race_filter.Add('HighElfRace');             
+                                            
+  //cur_faction_filter.Add('VampireFaction');           // Filter by BanditFaction
+  cur_faction_filter.Add('BanditFaction');
+  //cur_faction_filter.Add('ForswornFaction');
+  //cur_faction_filter.Add('CWImperialFaction');
+  //cur_faction_filter.Add('CWSonsFaction');
+  //cur_faction_filter.Add('VigilantOfStendarrFaction');            
+  
+  //cur_editorid_substring_filter.Add('');              // No need to filter by EDID substring
+  
+  //cur_voice_filter.Add('FemaleCommander');			// No need to filter by VTYP
+  //cur_voice_filter.Add('FemaleCommoner');
+  //cur_voice_filter.Add('FemaleCondescending');
+  //cur_voice_filter.Add('FemaleCoward');
+  //cur_voice_filter.Add('FemaleDarkElf');
+  //cur_voice_filter.Add('FemaleElfHaughty');
+  cur_voice_filter.Add('FemaleEvenToned');
+  //cur_voice_filter.Add('FemaleNord');
+  //cur_voice_filter.Add('FemaleSultry');
+  //cur_voice_filter.Add('FemaleYoungEager');
 end;
   
 procedure setupVariablesForVanillaLeveledList;
@@ -430,7 +538,7 @@ end;
 // Main loop that iterates over every leveled list group
 procedure makeDwLevedList;
 var
-    full_name_filter, race_filter, faction_filter, editorid_substring_filter : TStringList;
+    full_name_filter, race_filter, faction_filter, editorid_substring_filter, voice_filter : TStringList;
     i : integer;
     lvln_name : string;
 begin
@@ -440,7 +548,8 @@ begin
         race_filter                 := TStringList(lRaceFilter[i]);
         faction_filter              := TStringList(lFactionFilter[i]);
         editorid_substring_filter   := TStringList(lEditorIdSubstringFilter[i]);
-        makeLeveledListFromFilters(lvln_name, full_name_filter, race_filter, faction_filter, editorid_substring_filter);
+		voice_filter				:= TStringList(lVoiceFilter[i]);
+        makeLeveledListFromFilters(lvln_name, full_name_filter, race_filter, faction_filter, editorid_substring_filter, voice_filter);
     end;
 end;
 
@@ -464,7 +573,7 @@ begin
   Result := isGood;
 end;
 
-function isIncludedByRaceFilter(npc : IInterface; filter : TStringList) : boolean;
+function isIncludedBySignatureFilter(npc : IInterface; filter : TStringList; signature : string) : boolean;
 var
   i : integer;
   isGood : boolean;
@@ -478,7 +587,7 @@ begin
   //AddMessage('1Next: ' + EditorID(npc));
   for i := 0 to filter.Count-1 do begin
     //AddMessage(EditorID(npc) + ' | ' + EditorID(LinksTo(ElementBySignature(npc, 'RNAM'))) + ' | ' + filter[i]);
-    if EditorID(LinksTo(ElementBySignature(npc, 'RNAM'))) = filter[i] then
+    if EditorID(LinksTo(ElementBySignature(npc, signature))) = filter[i] then
         isGood := True;
   end;
   Result := isGood;
@@ -534,7 +643,7 @@ begin
   Result := isGood;
 end;
 
-procedure makeLeveledListFromFilters(lvln_name : string; full_name_filter, race_filter, faction_filter, editorid_substring_filter : TStringList);
+procedure makeLeveledListFromFilters(lvln_name : string; full_name_filter, race_filter, faction_filter, editorid_substring_filter, voice_filter : TStringList);
 var
   lvln_rec : IInterface;
   npcs, npc : IInterface;
@@ -558,6 +667,8 @@ begin
     //  AddMessage('>>>>' + editorid_substring_filter[i]);
     //end;
     lvln_rec := createLeveledList(dwFile, lvln_name);
+	SetElementNativeValues(lvln_rec, 'LVLF', $3);
+	
     npcs := GroupBySignature(dwFile, 'NPC_');
     for i := 0 to Pred(ElementCount(npcs)) do begin
         npc := ElementByIndex(npcs, i);
@@ -569,12 +680,13 @@ begin
         // apply filters
         if not isIncludedByFullFilter(npc, full_name_filter) then Continue;
         //AddMessage('Past full filter');
-        if not isIncludedByRaceFilter(npc, race_filter) then Continue;
+        if not isIncludedBySignatureFilter(npc, race_filter, 'RNAM') then Continue;
         //AddMessage('Past race filter');
         if not isIncludedByFactionFilter(npc, faction_filter) then Continue;
         //AddMessage('Past fact filter');
         if not isIncludedBySubstringFilter(npc,  editorid_substring_filter) then Continue;
         //AddMessage('Past edid filter');
+		if not isIncludedBySignatureFilter(npc, voice_filter, 'VTCK') then Continue;
 
         AddLeveledListEntry(lvln_rec, 1, npc, 1);
     end;
