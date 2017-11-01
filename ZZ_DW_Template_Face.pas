@@ -29,6 +29,7 @@ unit userscript;
 var
   slRoleTemplateList, slRoleTemplateNameList, slRoleTemplateEditorIdList, slLevelListName : TStringList;
   lFaceTemplateList, lFullNameFilter, lRaceFilter, lFactionFilter, lEditorIdSubstringFilter, lVanillaLevelList, lVanillaLevelListCount, lVoiceFilter : TList;
+  lVarFullNameFilter, lVarRaceFilter, lVarFactionFilter, lVarEditorIdSubstringFilter, lVarVoiceFilter, lVampireKeywordExclusion : TList;
   target_file, skyrimFile, dwFile, iwFile : IInterface;
   
   
@@ -39,7 +40,7 @@ procedure setupVariablesForVariations;
 var
   i : integer;
   template_index : integer;
-  cur_template_faces : TStringList;
+  cur_full_name_filter, cur_race_filter, cur_faction_filter, cur_editorid_substring_filter, cur_voice_filter : TStringList;
   template_editorid, new_base_editorid, new_full_name : string;
 begin
   // TStringList and TList Init
@@ -47,23 +48,48 @@ begin
   slRoleTemplateEditorIdList    := TStringList.Create;
   slRoleTemplateNameList        := TStringList.Create;
   lFaceTemplateList             := TList.Create;
+  lVarFullNameFilter            := TList.Create;
+  lVarRaceFilter                := TList.Create;
+  lVarFactionFilter             := TList.Create;
+  lVarEditorIdSubstringFilter   := TList.Create;
+  lVarVoiceFilter               := TList.Create;
+  lVampireKeywordExclusion		:= TList.Create;
 
   //-------------------------------------------------------------------------------------------------------------
   // Template for adding new variation
   //-------------------------------------------------------------------------------------------------------------
-  //template_editorid := '';   // Fill in Editor ID of the template NPC record that has all of the relevant stats/traits/perks etc...
-  //new_base_editorid := '';   // Fill in the desired "base" Editor ID of the new NPC records generated. New Editor ID = base + '_' + race + variation number
-  //new_full_name   := '';     // Fill in the desired FULL name of the new NPC records generated
+  // template_editorid := '';   // Fill in Editor ID of the template NPC record that has all of the relevant stats/traits/perks etc...
+  // new_base_editorid := '';   // Fill in the desired "base" Editor ID of the new NPC records generated. New Editor ID = base + '_' + race + variation number
+  // new_full_name   := '';     // Fill in the desired FULL name of the new NPC records generated
+  // 
+  // slRoleTemplateList.Add(template_editorid);                      // Just copy this block of code
+  // slRoleTemplateEditorIdList.Add(new_base_editorid);
+  // slRoleTemplateNameList.Add(new_full_name);
+  // lFaceTemplateList.Add(TStringList.Create);
+  // lVarFullNameFilter.Add(TStringList.Create);
+  // lVarRaceFilter.Add(TStringList.Create);  
+  // lVarFactionFilter.Add(TStringList.Create);  
+  // lVarEditorIdSubstringFilter.Add(TStringList.Create);  
+  // lVarVoiceFilter.Add(TStringList.Create);  
+  // template_index                 := slRoleTemplateList.IndexOf(template_editorid);
+  // cur_full_name_filter           := TStringList(lVarFullNameFilter[template_index]);
+  // cur_race_filter                := TStringList(lVarRaceFilter[template_index]);
+  // cur_faction_filter             := TStringList(lVarFactionFilter[template_index]);
+  // cur_editorid_substring_filter  := TStringList(lVarEditorIdSubstringFilter[template_index]);
+  // cur_voice_filter               := TStringList(lVarVoiceFilter[template_index]);
   //
-  //slRoleTemplateList.Add(template_editorid);                      // Just copy this block of code
-  //slRoleTemplateEditorIdList.Add(new_base_editorid);
-  //slRoleTemplateNameList.Add(new_full_name);
-  //lFaceTemplateList.Add(TStringList.Create);
-  //template_index := slRoleTemplateList.IndexOf(template_editorid);
-  //cur_template_faces := TStringList(lFaceTemplateList[template_index]);
+  // cur_full_name_filter.Add('');          // Each line here tells the script to use IW NPCs with these FULL names for variation. Comment out if not using filter.
+  //            
+  // cur_race_filter.Add('');               // Each line here tells the script to use IW NPCs with these races (using the race EditorID) for variation. Comment out if not using filter.
+  //    
+  // cur_faction_filter.Add('');            // Each line here tells the script to use IW NPCs with these factions (using the faction's Editor ID) for variation. Comment out if not using filter.
+  // 
+  // cur_editorid_substring_filter.Add(''); // Each line here tells the script to use IW NPCs whose EditorID has the given substring for variation. Comment out if not using filter
+  //                                        // Example: Imperial Soldiers and Guards have the same full name and faction, but different in EditorIDs (ie DW_EncSoldier vs DW_EncGuard)
+  // cur_voice_filter.Add('')               // Each line here tells the script to use IW NPCs with these VTYP Editor ID references for variation. Comment out if not using filter.
   //
-  //cur_template_faces.Add(''); // Add this line and the corresponding Immersive Wench Editor ID that you want to serve as a template (in the TPLT field)
-  
+  // lVampireKeywordExclusion.Add(True)		// Put either True or False (not in single quotes). Tells the script to ignore npcs with the Vampire Keyword since IW Vampire's are not part of VampireFaction
+											// Must put either True or False
   //-------------------------------------------------------------------------------------------------------------
   // Example : Vampire Template
   //-------------------------------------------------------------------------------------------------------------
@@ -75,36 +101,94 @@ begin
   slRoleTemplateEditorIdList.Add(new_base_editorid);
   slRoleTemplateNameList.Add(new_full_name);
   lFaceTemplateList.Add(TStringList.Create);
-  template_index := slRoleTemplateList.IndexOf(template_editorid);
-  cur_template_faces := TStringList(lFaceTemplateList[template_index]);
-                                                                         // Generated NPC Records:
-  cur_template_faces.Add('lalawenchnord01_2H_Sultry');                   // DW_EncVampire06Test_NordRace000 "Vampire"
-  cur_template_faces.Add('lalawenchnord02_magic');                       // DW_EncVampire06Test_NordRace001 "Vampire"
-  cur_template_faces.Add('lalawenchnord03_melee');                       // DW_EncVampire06Test_NordRace002 "Vampire"
-  cur_template_faces.Add('lalawenchnord05_necro_Sultry');                // DW_EncVampire06Test_NordRace003 "Vampire"
-  cur_template_faces.Add('lalawenchnord06_archer');                      // DW_EncVampire06Test_NordRace004 "Vampire"
-  cur_template_faces.Add('lalawenchnord07_2H');                          // DW_EncVampire06Test_NordRace005 "Vampire"
-  cur_template_faces.Add('lalawenchZZextradarkelf01_necro');             // DW_EncVampire06Test_DarkElfRace000 "Vampire"
-  cur_template_faces.Add('lalawenchZZextradarkelf02_tank_Sultry');       // DW_EncVampire06Test_DarkElfRace001 "Vampire"
+  lVarFullNameFilter.Add(TStringList.Create);
+  lVarRaceFilter.Add(TStringList.Create);  
+  lVarFactionFilter.Add(TStringList.Create);  
+  lVarEditorIdSubstringFilter.Add(TStringList.Create);  
+  lVarVoiceFilter.Add(TStringList.Create);  
+  template_index                := slRoleTemplateList.IndexOf(template_editorid);
+  cur_full_name_filter          := TStringList(lVarFullNameFilter[template_index]);
+  cur_race_filter               := TStringList(lVarRaceFilter[template_index]);
+  cur_faction_filter            := TStringList(lVarFactionFilter[template_index]);
+  cur_editorid_substring_filter := TStringList(lVarEditorIdSubstringFilter[template_index]);
+  cur_voice_filter              := TStringList(lVarVoiceFilter[template_index]);
   
+  //cur_full_name_filter.Add('');                       // Could also filter by "Vampire Wench"  
+            
+  //cur_race_filter.Add('NordRace');                    // No need to filter by race
+  //cur_race_filter.Add('BretonRace');
+  //cur_race_filter.Add('ImperialRace');
+  //cur_race_filter.Add('RedguardRace');
+  //cur_race_filter.Add('DarkElfRace');
+  //cur_race_filter.Add('WoodElfRace');
+  //cur_race_filter.Add('HighElfRace');             
+                                            
+  //cur_faction_filter.Add('');                      	// No need to filter by Factions
+
+  cur_editorid_substring_filter.Add('lalawenchYYDWDLC1vampire'); // Create variations using IW npcs with this substring in EditorID
+  
+  //cur_voice_filter.Add('FemaleCommander');            // No need to filter by voice
+  //cur_voice_filter.Add('FemaleCommoner');
+  //cur_voice_filter.Add('FemaleCondescending');
+  //cur_voice_filter.Add('FemaleCoward');
+  //cur_voice_filter.Add('FemaleDarkElf');
+  //cur_voice_filter.Add('FemaleElfHaughty');
+  //cur_voice_filter.Add('FemaleEvenToned');
+  //cur_voice_filter.Add('FemaleNord');
+  //cur_voice_filter.Add('FemaleSultry');
+  //cur_voice_filter.Add('FemaleYoungEager');   
+
+  lVampireKeywordExclusion.Add(False);  						// Do not exclude npcs with Vampire Keyword
   
   //-------------------------------------------------------------------------------------------------------------
-  // Example : Forsworn Template
+  // Example : Warlock Template
   //-------------------------------------------------------------------------------------------------------------
-  template_editorid := 'DW_EncForsworn06Melee1Hdualwield00backup';
-  new_base_editorid := 'DW_EncForsworn06Melee1HdualwieldTest';
-  new_full_name     := 'Forsworn Ravager';
+  template_editorid := 'DW_EncBandit06MagicBretonF00backup';
+  new_base_editorid := 'DW_EncWarlock06MagicEventoned';
+  new_full_name     := 'Warlock';
   
   slRoleTemplateList.Add(template_editorid);
   slRoleTemplateEditorIdList.Add(new_base_editorid);
   slRoleTemplateNameList.Add(new_full_name);
   lFaceTemplateList.Add(TStringList.Create);
-  template_index := slRoleTemplateList.IndexOf(template_editorid);
-  cur_template_faces := TStringList(lFaceTemplateList[template_index]);
-                                                                        // Generated NPC Records:
-  cur_template_faces.Add('lalawenchbreton01_Melee');                    // DW_EncForsworn06Melee1HdualwieldTest_BretonRace000 "Forsworn Ravager"
-  cur_template_faces.Add('lalawenchZZextrabreton05_2H_Sultry');         // DW_EncForsworn06Melee1HdualwieldTest_BretonRace001 "Forsworn Ravager"
-  cur_template_faces.Add('lalawenchnord20_2H_Sultry');                  // DW_EncForsworn06Melee1HdualwieldTest_NordRace000 "Forsworn Ravager"
+  lVarFullNameFilter.Add(TStringList.Create);
+  lVarRaceFilter.Add(TStringList.Create);  
+  lVarFactionFilter.Add(TStringList.Create);  
+  lVarEditorIdSubstringFilter.Add(TStringList.Create);  
+  lVarVoiceFilter.Add(TStringList.Create);  
+  template_index                := slRoleTemplateList.IndexOf(template_editorid);
+  cur_full_name_filter          := TStringList(lVarFullNameFilter[template_index]);
+  cur_race_filter               := TStringList(lVarRaceFilter[template_index]);
+  cur_faction_filter            := TStringList(lVarFactionFilter[template_index]);
+  cur_editorid_substring_filter := TStringList(lVarEditorIdSubstringFilter[template_index]);
+  cur_voice_filter              := TStringList(lVarVoiceFilter[template_index]);
+  
+  //cur_full_name_filter.Add('');                       // No need to filter by FULL name   
+            
+  cur_race_filter.Add('NordRace');                      // Create variations using IW npcs that are nords or bretons
+  cur_race_filter.Add('BretonRace');
+  //cur_race_filter.Add('ImperialRace');
+  //cur_race_filter.Add('RedguardRace');
+  //cur_race_filter.Add('DarkElfRace');
+  //cur_race_filter.Add('WoodElfRace');
+  //cur_race_filter.Add('HighElfRace');             
+                                            
+  //cur_faction_filter.Add('');                      	// No need to filter by Factions
+
+  //cur_editorid_substring_filter.Add('');              // No need to filter by substring
+  
+  //cur_voice_filter.Add('FemaleCommander');            // Create variations using IW npcs that have this voice type
+  //cur_voice_filter.Add('FemaleCommoner');
+  //cur_voice_filter.Add('FemaleCondescending');
+  //cur_voice_filter.Add('FemaleCoward');
+  //cur_voice_filter.Add('FemaleDarkElf');
+  //cur_voice_filter.Add('FemaleElfHaughty');
+  cur_voice_filter.Add('FemaleEvenToned');
+  //cur_voice_filter.Add('FemaleNord');
+  //cur_voice_filter.Add('FemaleSultry');
+  //cur_voice_filter.Add('FemaleYoungEager');   
+  
+  lVampireKeywordExclusion.Add(True);							// Exclude Vampires
 end; 
   
 procedure setupVariablesForLeveledList;
@@ -119,7 +203,7 @@ begin
   lRaceFilter               := TList.Create; 
   lFactionFilter            := TList.Create; 
   lEditorIdSubstringFilter  := TList.Create;  
-  lVoiceFilter				:= TList.Create;
+  lVoiceFilter              := TList.Create;
   
   // For each leveled list string in slLevelListName, creates a leveled list entry with that name and adds npcs
   // from Deadly Wenches that meet the filters set below
@@ -189,7 +273,7 @@ begin
 
   //cur_editorid_substring_filter.Add('');              // No need to filter by EDID substring
   
-  //cur_voice_filter.Add('FemaleCommander');			// No need to filter by VTYP
+  //cur_voice_filter.Add('FemaleCommander');            // No need to filter by VTYP
   //cur_voice_filter.Add('FemaleCommoner');
   //cur_voice_filter.Add('FemaleCondescending');
   //cur_voice_filter.Add('FemaleCoward');
@@ -240,7 +324,7 @@ begin
 
   //cur_editorid_substring_filter.Add('');              // No need to filter by EDID substring
   
-  //cur_voice_filter.Add('FemaleCommander');			// No need to filter by VTYP
+  //cur_voice_filter.Add('FemaleCommander');            // No need to filter by VTYP
   //cur_voice_filter.Add('FemaleCommoner');
   //cur_voice_filter.Add('FemaleCondescending');
   //cur_voice_filter.Add('FemaleCoward');
@@ -289,7 +373,7 @@ begin
 
   cur_editorid_substring_filter.Add('DW_EncSoldier');   // Filter on editor IDs so you don't get Imperial Guards
   
-  //cur_voice_filter.Add('FemaleCommander');			// No need to filter by VTYP
+  //cur_voice_filter.Add('FemaleCommander');            // No need to filter by VTYP
   //cur_voice_filter.Add('FemaleCommoner');
   //cur_voice_filter.Add('FemaleCondescending');
   //cur_voice_filter.Add('FemaleCoward');
@@ -339,7 +423,7 @@ begin
   
   //cur_editorid_substring_filter.Add('');              // No need to filter by EDID substring
   
-  //cur_voice_filter.Add('FemaleCommander');			// No need to filter by VTYP
+  //cur_voice_filter.Add('FemaleCommander');            // No need to filter by VTYP
   //cur_voice_filter.Add('FemaleCommoner');
   //cur_voice_filter.Add('FemaleCondescending');
   //cur_voice_filter.Add('FemaleCoward');
@@ -393,7 +477,7 @@ begin
   
   //cur_editorid_substring_filter.Add('');              // No need to filter by EDID substring
   
-  //cur_voice_filter.Add('FemaleCommander');			// No need to filter by VTYP
+  //cur_voice_filter.Add('FemaleCommander');            // No need to filter by VTYP
   //cur_voice_filter.Add('FemaleCommoner');
   //cur_voice_filter.Add('FemaleCondescending');
   //cur_voice_filter.Add('FemaleCoward');
@@ -463,13 +547,14 @@ var
   template_str, baseEdid_str, full_str : string;
   slFacesNPCs : TStringList;
 begin
-    for i := 0 to slRoleTemplateList.Count-1 do begin
-        template_str    := slRoleTemplateList[i];
-        baseEdid_str    := slRoleTemplateEditorIdList[i];
-        full_str        := slRoleTemplateNameList[i];
-        slFacesNPCs     := TStringList(lFaceTemplateList[i]);
-        makeWenchesFromTemplate(template_str, baseEdid_str, full_str, slFacesNPCs);
-    end;
+  populateVariationLists;
+  for i := 0 to slRoleTemplateList.Count-1 do begin
+      template_str    := slRoleTemplateList[i];
+      baseEdid_str    := slRoleTemplateEditorIdList[i];
+      full_str        := slRoleTemplateNameList[i];
+      slFacesNPCs     := TStringList(lFaceTemplateList[i]);
+      makeWenchesFromTemplate(template_str, baseEdid_str, full_str, slFacesNPCs);
+  end;
 end;
 
 // Handles making each variation record from the template
@@ -531,6 +616,66 @@ begin
     SetElementEditValues(new_rec, s, GetElementEditValues(iw_rec, s));
 
 end;
+
+procedure populateVariationLists;
+var
+    iw_npc_list, full_name_filter, race_filter, faction_filter, editorid_substring_filter, voice_filter : TStringList;
+    i : integer;
+    lvln_name : string;
+	is_vampire_keyword_excluded : boolean;
+begin
+    for i := 0 to slRoleTemplateList.Count-1 do begin
+		iw_npc_list					:= TStringList(lFaceTemplateList[i]);
+        full_name_filter            := TStringList(lVarFullNameFilter[i]);
+        race_filter                 := TStringList(lVarRaceFilter[i]);
+        faction_filter              := TStringList(lVarFactionFilter[i]);
+        editorid_substring_filter   := TStringList(lVarEditorIdSubstringFilter[i]);
+        voice_filter                := TStringList(lVarVoiceFilter[i]);
+		is_vampire_keyword_excluded := Boolean(lVampireKeywordExclusion[i]);
+        populateVariationListsFromFilters(iw_npc_list, full_name_filter, race_filter, faction_filter, editorid_substring_filter, voice_filter, is_vampire_keyword_excluded);
+    end;
+end;
+
+function checkVampireKeyword(npc : IInterface): boolean;
+var
+  keyword_group : IInterface;
+  i : integer;
+begin
+  keyword_group := ElementByPath(npc, 'KWDA');
+  Result := False;
+  for i := 0 to ElementCount(keyword_group)-1 do begin
+	if EditorID(LinksTo(ElementByIndex(keyword_group, i))) = 'Vampire' then begin
+		Result := True;
+		Exit;
+	end;
+  end;
+end;
+
+procedure populateVariationListsFromFilters(iw_npc_list, full_name_filter, race_filter, faction_filter, editorid_substring_filter, voice_filter : TStringList; is_vampire_keyword_excluded : boolean);
+var
+  lvln_rec : IInterface;
+  npcs, npc : IInterface;
+  i : integer;
+begin
+    npcs := GroupBySignature(iwFile, 'NPC_');
+    for i := 0 to Pred(ElementCount(npcs)) do begin
+        npc := ElementByIndex(npcs, i);
+        
+        // Ignore npcs without FULL names (likely a template record)
+        if not Assigned(ElementBySignature(npc, 'FULL')) then Continue;
+		
+		if is_vampire_keyword_excluded and checkVampireKeyword(npc) then Continue;
+        
+        // apply filters
+        if not isIncludedByFullFilter(npc, full_name_filter) then Continue;
+        if not isIncludedBySignatureFilter(npc, race_filter, 'RNAM') then Continue;
+        if not isIncludedByFactionFilter(npc, faction_filter) then Continue;
+        if not isIncludedBySubstringFilter(npc,  editorid_substring_filter) then Continue;
+        if not isIncludedBySignatureFilter(npc, voice_filter, 'VTCK') then Continue;
+
+        iw_npc_list.Add(EditorID(npc));
+    end;
+end;
 //--------------------------------------------------------------------------------------------
 // Leveled List Code
 //--------------------------------------------------------------------------------------------
@@ -548,7 +693,7 @@ begin
         race_filter                 := TStringList(lRaceFilter[i]);
         faction_filter              := TStringList(lFactionFilter[i]);
         editorid_substring_filter   := TStringList(lEditorIdSubstringFilter[i]);
-		voice_filter				:= TStringList(lVoiceFilter[i]);
+        voice_filter                := TStringList(lVoiceFilter[i]);
         makeLeveledListFromFilters(lvln_name, full_name_filter, race_filter, faction_filter, editorid_substring_filter, voice_filter);
     end;
 end;
@@ -649,26 +794,9 @@ var
   npcs, npc : IInterface;
   i : integer;
 begin
-    //AddMessage('LeveledList Name: ' + lvln_name);
-    //AddMessage('>>Full Name: ');
-    //for i := 0 to full_name_filter.Count-1 do begin
-    //  AddMessage('>>>>' + full_name_filter[i]);
-    //end;
-    //AddMessage('>>Race Name: ');
-    //for i := 0 to race_filter.Count-1 do begin
-    //  AddMessage('>>>>' + race_filter[i]);
-    //end;
-    //AddMessage('>>Faction Name: ');
-    //for i := 0 to faction_filter.Count-1 do begin
-    //  AddMessage('>>>>' + faction_filter[i]);
-    //end;
-    //AddMessage('>>Substring Name: ');
-    //for i := 0 to editorid_substring_filter.Count-1 do begin
-    //  AddMessage('>>>>' + editorid_substring_filter[i]);
-    //end;
     lvln_rec := createLeveledList(dwFile, lvln_name);
-	SetElementNativeValues(lvln_rec, 'LVLF', $3);
-	
+    SetElementNativeValues(lvln_rec, 'LVLF', $3);
+    
     npcs := GroupBySignature(dwFile, 'NPC_');
     for i := 0 to Pred(ElementCount(npcs)) do begin
         npc := ElementByIndex(npcs, i);
@@ -676,17 +804,12 @@ begin
         // Ignore npcs without FULL names (likely a template record)
         if not Assigned(ElementBySignature(npc, 'FULL')) then Continue;
         
-        //AddMessage(EditorID(npc));
         // apply filters
         if not isIncludedByFullFilter(npc, full_name_filter) then Continue;
-        //AddMessage('Past full filter');
         if not isIncludedBySignatureFilter(npc, race_filter, 'RNAM') then Continue;
-        //AddMessage('Past race filter');
         if not isIncludedByFactionFilter(npc, faction_filter) then Continue;
-        //AddMessage('Past fact filter');
         if not isIncludedBySubstringFilter(npc,  editorid_substring_filter) then Continue;
-        //AddMessage('Past edid filter');
-		if not isIncludedBySignatureFilter(npc, voice_filter, 'VTCK') then Continue;
+        if not isIncludedBySignatureFilter(npc, voice_filter, 'VTCK') then Continue;
 
         AddLeveledListEntry(lvln_rec, 1, npc, 1);
     end;
@@ -873,6 +996,7 @@ begin
     TStringList(lFactionFilter[i]).Free;
     TStringList(lEditorIdSubstringFilter[i]).Free;
     TStringList(lVanillaLevelList[i]).Free;
+	TStringList(lVoiceFilter[i]).Free;
     TList(lVanillaLevelListCount[i]).Free;
   end;
   lFullNameFilter.Free;
@@ -881,11 +1005,22 @@ begin
   lEditorIdSubstringFilter.Free;
   lVanillaLevelList.Free;
   lVanillaLevelListCount.Free;
+  lVoiceFilter.Free;
   
   for i := 0 to slRoleTemplateList.Count-1 do begin
     TStringList(lFaceTemplateList[i]).Free;
+    TStringList(lVarFullNameFilter[i]).Free;
+    TStringList(lVarRaceFilter[i]).Free;
+    TStringList(lVarFactionFilter[i]).Free;
+    TStringList(lVarEditorIdSubstringFilter[i]).Free;
+	TStringList(lVarVoiceFilter[i]).Free;
   end;
   lFaceTemplateList.Free;
+  lVarFullNameFilter.Free;
+  lVarRaceFilter.Free;
+  lVarFactionFilter.Free;
+  lVarEditorIdSubstringFilter.Free;
+  lVarVoiceFilter.Free;
   
   slRoleTemplateList.Free;
   slRoleTemplateNameList.Free;
@@ -931,13 +1066,21 @@ end;
 // You can remove it if script doesn't require initialization code
 function Initialize: integer;
 begin
+  AddMessage('setupGlobalVariables...');
   setupGlobalVariables;
+  AddMessage('setupVariablesForVariations...');
   setupVariablesForVariations;
+  AddMessage('setupVariablesForLeveledList...');
   setupVariablesForLeveledList;
+  AddMessage('setupVariablesForVanillaLeveledList...');
   setupVariablesForVanillaLeveledList;
+  AddMessage('makeWenches...');
   makeWenches;
+  AddMessage('makeDwLevedList...');
   makeDwLevedList;
+  AddMessage('addDwLeveledListToVanilla...');
   addDwLeveledListToVanilla;
+  AddMessage('done...');
   //replaceClass;
 
   Result := 0;
